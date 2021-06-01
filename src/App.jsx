@@ -7,6 +7,7 @@ import Shop from './pages/shop/shop';
 import SigninSignup from './pages/signin-signup/signin-signup';
 import Header from './components/header/header';
 import { auth } from './firebase/firebase.utils';
+import { createUserProfileDocument } from './firebase/firebase.utils';
 
 class App extends React.Component {
   constructor() {
@@ -21,10 +22,30 @@ class App extends React.Component {
   // Open subscription - open messaging system between application and firebase app
   // whenever any changes occur related to the app, firebase sends a msg that auth has changed
   componentDidMount() {
-    this.unsubscribeFromAuth = auth.onAuthStateChanged((user) => {
-      this.setState({ currentUser: user });
+    this.unsubscribeFromAuth = auth.onAuthStateChanged(async (userAuth) => {
+      // this.setState({ currentUser: user });
+      // createUserProfileDocument(user);
+      if (userAuth) {
+        const userRef = await createUserProfileDocument(userAuth);
 
-      console.log(user);
+        userRef.onSnapshot((snapShot) => {
+          this.setState(
+            {
+              currentUser: {
+                id: snapShot.id,
+                ...snapShot.data(),
+              },
+            },
+            () => {
+              console.log(this.state);
+            }
+          );
+        });
+      } else {
+        this.setState({ currentUser: userAuth });
+      }
+      // console.log(user);
+      console.log(this.setState);
     });
   }
 

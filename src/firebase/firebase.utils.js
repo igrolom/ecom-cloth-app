@@ -12,6 +12,33 @@ const firebaseConfig = {
   measurementId: 'G-JCDPGT6Q9X',
 };
 
+// USER AUTH OBJECT FROM DB - async |userAuth - from AUTH library, that we are logging from  this.setState({ currentUser: user });
+export const createUserProfileDocument = async (userAuth, additionalData) => {
+  if (!userAuth) return;
+  const userRef = firestore.doc(`users/${userAuth.uid}`);
+  console.log(userRef);
+  const snapShot = await userRef.get();
+  console.log(snapShot);
+
+  if (!snapShot.exists) {
+    const { displayName, email } = userAuth;
+    const createdAt = new Date();
+
+    try {
+      await userRef.set({
+        displayName,
+        email,
+        createdAt,
+        ...additionalData,
+      });
+    } catch (err) {
+      console.log('error creating user: ', err);
+    }
+    console.log(snapShot);
+  }
+  return userRef;
+};
+
 firebase.initializeApp(firebaseConfig);
 export const auth = firebase.auth();
 export const firestore = firebase.firestore();
